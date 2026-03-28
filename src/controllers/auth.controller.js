@@ -1,4 +1,4 @@
-// const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs")
 const emailService = require("../services/email.service")
 const userModel = require("../models/user.models")
 const jwt = require("jsonwebtoken")
@@ -23,7 +23,7 @@ async function registerHandler(req, res) {
     const token = await jwt.sign({ id: user._id, name: user.name }, process.env.jwtSecret, { expiresIn: 30000 })
     res.cookie("token", token)
 
-    //  emailService.sendEmailtoUser(user.email, user.name)
+     emailService.sendEmailtoUser(user.email, user.name)
 
     return res.status(201).json({
         user: {
@@ -61,7 +61,7 @@ async function loginHandler(req, res) {
     )
     res.cookie("token", token)
 
-    // emailService.sendMailLogin(user.email, user.name)
+    emailService.sendMailLogin(user.email, user.name)
 
     return res.status(202).json({
        name: user.name
