@@ -20,6 +20,14 @@ const userSchema = new mongoose.Schema({
         required: [true, "Please enter your password"],
         minlength: [6, "Password should contain more then 6 charecter"],
         select: false
+    },
+    userType: {
+        type: String,
+        enum: {
+            values: ["Customer", "Employee", "Manager"],
+            message: "user can either be manager, employee or customer"
+        },
+        default: "Customer"
     }
 }, {
     timestamps: true
