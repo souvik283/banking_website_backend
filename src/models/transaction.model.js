@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
-
+const ledgerModel = require("./ledger.model")
+const { $where } = require("./account.model")
 
 const transactionSchema = new mongoose.Schema({
     fromAccount: {
@@ -37,6 +38,28 @@ const transactionSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+transactionSchema.methods.checkBalace = async function() {
+
+    const balanceData = await ledgerModel.aggregate([
+        {$match: {accountId: this._id}},
+        {$group: {
+            _id: null,
+            totalDebit:{
+                $sum:{
+                    $cond: [
+                        {$eq: ["$type", "Debit"]},
+                        "$amount",
+                        0
+                    ]
+                }
+            }
+        }
+    }
+    ])
+    
+}
+
 
 const transactionModel = mongoose.model("transaction", transactionSchema)
 

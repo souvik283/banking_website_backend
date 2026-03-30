@@ -25,6 +25,13 @@ const ledgerSchema= new mongoose.Schema({
        required: [true, "ledger must have a type"],
        immutable: true
     },
+    amount:{
+        type: Number,
+        required: true,
+        immutable: true,
+        min:[0, "ammount can't be negative"]
+
+    }
 
 },{
     timestamps: true
