@@ -198,4 +198,94 @@ async function sendMailLogin(email, name) {
 
 }
 
-module.exports ={ sendEmailtoUser, sendMailLogin }
+async function sendAuthority(name, email, userId) {
+
+const subject = `Request for Account Verification Approval`
+
+const  html = `
+  <!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Verification Request</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f6f8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+
+      <tr>
+        <td align="center">
+          <h2 style="margin:0;color:#333333;">Verification Request</h2>
+          <p style="color:#555555;font-size:16px;">
+            A new account application requires your verification.
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <p style="color:#555555;font-size:15px;">
+            Dear Authority,
+          </p>
+          <p style="color:#555555;font-size:15px;">
+            A user has submitted a request to create a bank account. Kindly review the submitted details and take appropriate action.
+          </p>
+
+          <p style="color:#555555;font-size:15px;"><strong>User Details:</strong></p>
+          <ul style="color:#555555;font-size:15px;">
+            <li>Name: ${name}</li>
+            <li>Email: ${email}</li>
+            <li>Creatting link: http://localhost:7000/api/account?userId=${userId}</li>
+          </ul>
+
+          <p style="color:#555555;font-size:15px;">
+            Please verify the details and choose one of the following actions:
+          </p>
+          <ul style="color:#555555;font-size:15px;">
+            <li>Approve → Bank account will be created</li>
+            <li>Reject → Account will not be created</li>
+          </ul>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding:20px;">
+          <a href="http://localhost:7000/api/account?userId=${userId}" style="background:#4CAF50;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;margin-right:10px;display:inline-block;">
+            Approve
+          </a>
+          <a href="#" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
+            Reject
+          </a>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center">
+          <p style="color:#999999;font-size:13px;">
+            This is an automated request. Please take action at your earliest convenience.
+          </p>
+          <p style="color:#333333;font-size:14px;">— System Notification</p>
+        </td>
+      </tr>
+
+    </table>
+  </td>
+</tr>
+
+
+  </table>
+</body>
+</html>
+
+`
+const text =``
+
+  sendEmail(email, subject, text, html)
+  
+}
+
+module.exports ={ sendEmailtoUser, sendMailLogin, sendAuthority }
