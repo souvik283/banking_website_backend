@@ -1,20 +1,29 @@
-const sendEmail = require("../services/email.service")
 const accountModel = require("../models/account.model")
 const userModel = require("../models/user.models")
 const jwt = require("jsonwebtoken")
+const emailService = require("../services/email.service")
 
 async function createAccountHandler(req, res) {
     try {
-
         const userIdJwt = req.query.userId
+        const rejectIdJwt = req.query.rejectId
+
+        if (rejectIdJwt) {
+            const decode = jwt.verify(rejectIdJwt, process.env.jwtSecret)
+            const rejectId = decode.userId
+
+            const user = await userModel.findOne({
+                _id: rejectId
+            })
+
+            // emailService.sendAccRejection(user.name, user.email)
+
+            return res.status(401).json({
+                msg: "your applicatioon for account opening has been regected"
+            })
+        }
 
         if (userIdJwt) {
-
-            if (userIdJwt == 'reject') {
-                return res.status(401).json({
-                    msg: "your applicatioon for account opening has been regected"
-                })
-            }
 
             const decode = jwt.verify(userIdJwt, process.env.jwtSecret)
             const userId = decode.userId
@@ -55,7 +64,7 @@ async function createAccountHandler(req, res) {
 
             const userId = jwt.sign({ userId: res.user._id }, process.env.jwtSecret)
 
-            sendEmail.sendAuthority(res.user.name, res.user.email, userId)
+            // emailService.sendAuthority(res.user.name, res.user.email, userId)
 
             return res.status(201).json({
                 msg: "Your account submission has taken and a token has been generated. Bank authority will verify your information. Your account will be created and account number with details will be sent to you shortly.  Thank you for using our app"
@@ -88,10 +97,15 @@ async function createAccountHandler(req, res) {
 
 async function createUserAccount(userId) {
     const accNum = await createUniqueAccNum()
+    const user = await userModel.findOne({
+        _id: userId
+    })
     const account = await accountModel.create({
         user: userId,
         accountNumber: accNum
     })
+
+    // emailService.sendAccConfirmation(user.name, user.email, accNum)
 
     return account
 }

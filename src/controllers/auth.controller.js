@@ -23,7 +23,7 @@ async function registerHandler(req, res) {
     const token = await jwt.sign({ id: user._id, name: user.name }, process.env.jwtSecret, { expiresIn: 30000 })
     res.cookie("token", token)
 
-    //  emailService.sendEmailtoUser(user.email, user.name)
+    //  emailService.sendEmailRegister(user.email, user.name)
 
     return res.status(201).json({
         user: {

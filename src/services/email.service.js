@@ -40,10 +40,10 @@ const sendEmail = async (to, subject, text, html) => {
   }
 };
 
-async function sendEmailtoUser (email, name) {
-    // console.log("heyyyy")
-    const subject = `Welcome to Our Website`
-    const text = `
+async function sendEmailRegister(email, name) {
+  // console.log("heyyyy")
+  const subject = `Welcome to Our Website`
+  const text = `
         Hi ${name},
 
 Welcome and thank you for registering with us!
@@ -64,7 +64,7 @@ Best regards,
 SG Bank of India
     `
 
-    const html = `
+  const html = `
     <!DOCTYPE html>
 
 <html>
@@ -125,12 +125,12 @@ SG Bank of India
 </html>
 
     `
-    await sendEmail(email, subject, text, html)
-    
+  await sendEmail(email, subject, text, html)
+
 }
 
 async function sendMailLogin(email, name) {
- const  html = `
+  const html = `
   <!DOCTYPE html>
 
 <html>
@@ -200,9 +200,9 @@ async function sendMailLogin(email, name) {
 
 async function sendAuthority(name, email, userId) {
 
-const subject = `Request for Account Verification Approval`
+  const subject = `Request for Account Verification Approval`
 
-const  html = `
+  const html = `
   <!DOCTYPE html>
 
 <html>
@@ -239,7 +239,6 @@ const  html = `
           <ul style="color:#555555;font-size:15px;">
             <li>Name: ${name}</li>
             <li>Email: ${email}</li>
-            <li>Creatting link: http://localhost:7000/api/account?userId=${userId}</li>
           </ul>
 
           <p style="color:#555555;font-size:15px;">
@@ -257,7 +256,7 @@ const  html = `
           <a href="http://localhost:7000/api/account?userId=${userId}" style="background:#4CAF50;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;margin-right:10px;display:inline-block;">
             Approve
           </a>
-          <a href="http://localhost:7000/api/account?userId=reject" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
+          <a href="http://localhost:7000/api/account?rejectId=${userId}" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
             Reject
           </a>
         </td>
@@ -282,10 +281,175 @@ const  html = `
 </html>
 
 `
-const text =``
+  const text = ``
 
-  sendEmail(email, subject, text, html)
-  
+  sendEmail(process.env.EMAIL_USER, subject, text, html)
+
 }
 
-module.exports ={ sendEmailtoUser, sendMailLogin, sendAuthority }
+async function sendAccConfirmation(name, email, accNumber) {
+
+  const subject = `Your Bank Account Has Been Successfully Created`
+
+  const html = `
+  
+  <!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Account Created</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f6f8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
+    <tr>
+      <td align="center">
+        <table width="600" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+
+      <tr>
+        <td align="center">
+          <h2 style="color:#333;">🎉 Account Successfully Created</h2>
+          <p style="color:#555;font-size:16px;">
+            Congratulations! Your bank account has been successfully created.
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <p style="color:#555;font-size:15px;"><strong>Account Details:</strong></p>
+          <ul style="color:#555;font-size:15px;">
+            <li>Account Number: ${accNumber}</li>
+            <li>Account Holder: ${name}</li>
+            <li>Status: Active</li>
+          </ul>
+
+          <p style="color:#555;font-size:15px;">
+            You can now log in and start using our banking services.
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding:20px;">
+          <a href="#" style="background:#4CAF50;color:#fff;padding:12px 20px;text-decoration:none;border-radius:5px;">
+            Go to Dashboard
+          </a>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center">
+          <p style="color:#999;font-size:13px;">
+            If you have any questions, feel free to contact our support team.
+          </p>
+          <p style="color:#333;">— SG Bank of India</p>
+        </td>
+      </tr>
+
+    </table>
+  </td>
+</tr>
+
+
+  </table>
+</body>
+</html>
+
+  
+  `
+
+  const text = ``
+
+
+  sendEmail(email, subject, text, html)
+
+}
+
+async function sendAccRejection(name, email) {
+
+  const subject = `Update on Your Account Application`
+
+  const html = `
+
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Application Status</title>
+</head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#f4f6f8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px;">
+    <tr>
+      <td align="center">
+        <table width="600" style="background:#ffffff;border-radius:8px;padding:30px;">
+
+
+      <tr>
+        <td align="center">
+          <h2 style="color:#333;">Application Not Approved ❌</h2>
+          <p style="color:#555;font-size:16px;">
+            Thank you ${name}, for your interest in opening an account with us.
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <p style="color:#555;font-size:15px;">
+            After careful review, we regret to inform you that your account application could not be approved at this time.
+          </p>
+
+          <p style="color:#555;font-size:15px;">
+            This decision may be due to missing information or not meeting certain verification requirements.
+          </p>
+
+          <p style="color:#555;font-size:15px;">
+            You are welcome to submit a new application after updating or correcting your details.
+          </p>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding:20px;">
+          <a href="#" style="background:#2196F3;color:#ffffff;padding:12px 20px;text-decoration:none;border-radius:5px;">
+            Reapply Now
+          </a>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center">
+          <p style="color:#999;font-size:13px;">
+            If you need assistance, our support team is here to help you.
+          </p>
+          <p style="color:#333;">— The Team</p>
+        </td>
+      </tr>
+
+    </table>
+  </td>
+</tr>
+
+  </table>
+</body>
+</html>
+
+
+         `
+  const text = ``
+
+
+  sendEmail(email, subject, text, html)
+
+}
+
+module.exports = {
+  sendEmailRegister,
+  sendMailLogin,
+  sendAuthority,
+  sendAccConfirmation,
+  sendAccRejection
+}
