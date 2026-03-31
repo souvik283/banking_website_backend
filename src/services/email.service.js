@@ -257,7 +257,7 @@ const  html = `
           <a href="http://localhost:7000/api/account?userId=${userId}" style="background:#4CAF50;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;margin-right:10px;display:inline-block;">
             Approve
           </a>
-          <a href="#" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
+          <a href="http://localhost:7000/api/account?userId=reject" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
             Reject
           </a>
         </td>

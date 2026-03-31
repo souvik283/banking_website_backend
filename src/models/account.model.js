@@ -8,6 +8,13 @@ const accountSchema = new mongoose.Schema({
         required: [true, "Account must be associate with valid user"],
         index: true
     },
+    accountNumber: {
+        type: Number,
+        required: [true, "Account must be associate with valid account number"],
+        trim: true,
+        unique: true,
+        default: 0
+    },
     status: {
         type: String,
         enum:{
