@@ -27,7 +27,9 @@ const userSchema = new mongoose.Schema({
             values: ["Customer", "Employee", "Manager"],
             message: "user can either be manager, employee or customer"
         },
-        default: "Customer"
+        default: "Customer",
+        select: false,
+        immutable: true
     }
 }, {
     timestamps: true

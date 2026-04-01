@@ -31,7 +31,7 @@ async function createAccountHandler(req, res) {
 
             const findAccoount = await accountModel.findOne({
                 user: userId
-            })
+            }).select("+userType")
             if (findAccoount) {
                 return res.status(401).json({
                     msg: "This already have an account with account number : "
@@ -130,10 +130,11 @@ async function createUniqueAccNum() {
         }
     }
 
+
     return accNumber
 
 }
 
 module.exports = {
-    createAccountHandler, createUserAccount
+    createAccountHandler
 }

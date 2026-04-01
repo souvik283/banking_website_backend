@@ -5,13 +5,13 @@ const { $where } = require("./account.model")
 const transactionSchema = new mongoose.Schema({
     fromAccount: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "accoount",
+        ref: "account",
         required: true,
         index: true
     },
     toAccount: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "accoount",
+        ref: "account",
         required: true,
         index: true
     },
@@ -53,11 +53,32 @@ transactionSchema.methods.checkBalace = async function() {
                         0
                     ]
                 }
+            },
+            totalCredit:{
+                $sum:{
+                    $cond: [
+                        {$eq: ["$type", "Credit"]},
+                        "$amount",
+                        0
+                    ]
+                }
             }
+        }
+    },
+    {
+        $project:{
+            _id: 0,
+            balance: { $subtract: ["$totalCredit", "$totalDebit"]}
         }
     }
     ])
+
+    if (balanceData.length === 0) {
+        return 0
+    }
     
+return balanceData[0].balance
+
 }
 
 

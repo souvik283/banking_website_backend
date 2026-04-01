@@ -1,28 +1,29 @@
 const accountModel = require("../models/account.model")
 const transactionModel = require("../models/transaction.model")
+const ledgerModel = require("../models/ledger.model")
 const userModel = require("../models/user.models")
-
+const mongoose = require("mongoose")
 
 async function transactionHandler(req, res) {
 
-    const {fromAccount, toAccount, amount, idempotecyKey} = req.body
+    const { fromAccount, toAccount, amount, idempotecyKey } = req.body
 
-    if(!fromAccount||!toAccount||!amount||!idempotecyKey){
+    if (!fromAccount || !toAccount || !amount || !idempotecyKey) {
         return res.status(402).json({
-            msg:"For a transaction formAccount, toAccount, amount and idempotecyKey are required"
+            msg: "For a transaction formAccount, toAccount, amount and idempotecyKey are required"
         })
     }
 
 
     const fromUserAccount = await accountModel.findOne({
-        _id: fromAccount
+        accountNumber: fromAccount
     })
 
     const toUserAccount = await accountModel.findOne({
-        _id: toAccount
+        accountNumber: toAccount
     })
 
-    if (!fromUserAccount||!toUserAccount) {
+    if (!fromUserAccount || !toUserAccount) {
         return res.status(400).json({
             msg: "fromUserAccount or toUserAccount is invalid"
         })
@@ -59,31 +60,198 @@ async function transactionHandler(req, res) {
 
     if (fromUserAccount.status === "CLOSED") {
         return res.status(401).json({
-            msg:"fromUserAccount is already closed"
+            msg: "fromUserAccount is already closed"
         })
     }
     if (toUserAccount.status === "CLOSED") {
         return res.status(401).json({
-            msg:"toUserAccount is already closed"
+            msg: "toUserAccount is already closed"
         })
     }
     if (fromUserAccount.status === "FROZEN") {
         return res.status(401).json({
-            msg:"fromUserAccount is currently under frezed. Transaction is not possible now"
+            msg: "fromUserAccount is currently under frezed. Transaction is not possible now"
         })
     }
     if (toUserAccount.status === "FROZEN") {
         return res.status(401).json({
-            msg:"toUserAccount is currently under frezed. Transaction is not possible now"
+            msg: "toUserAccount is currently under frezed. Transaction is not possible now"
         })
     }
 
 
-    
+
+    const balance = await fromUserAccount.checkBalace()
+
+    if (amount > balance) {
+        return res.status(402).json({
+            message: `Insufficient balance. Current balance is ${balance}. Amount required ${amount}`
+        })
+    }
+
+    // create transaction model
+
+    const session = await mongoose.startSession()
+
+    try {
+        session.startTransaction()
+
+        const [transaction] = await transactionModel.create([{
+            fromAccount: fromUserAccount._id,
+            toAccount: toUserAccount._id,
+            amount: amount,
+            idempotecyKey,
+            status: "Pending"
+        }], { session })
+
+        await ledgerModel.create([{
+            accountId: fromUserAccount._id,
+            transactionId: transaction._id,
+            type: "Debit",
+            amount: amount
+
+        }], { session })
+
+        await ledgerModel.create([{
+            accountId: toUserAccount._id,
+            transactionId: transaction._id,
+            type: "Credit",
+            amount: amount
+
+        }], { session })
+
+        transaction.status = "Successfull"
+        await transaction.save({ session })
+
+        await session.commitTransaction()
+    } catch (error) {
+        await session.abortTransaction()
+        throw error
+
+    }
+    finally {
+        session.endSession()
+    }
+}
+
+
+
+
+async function authorityDepositHandler(req, res) {
+    const { toAccount, amount, idempotecyKey } = req.body
+
+    if ( !toAccount || !amount || !idempotecyKey) {
+        return res.status(402).json({
+            msg: "For a transaction formAccount, toAccount, amount and idempotecyKey are required"
+        })
+    }
+
+    const fromUserAccount = res.user
+
+    const toUserAccount = await accountModel.findOne({
+        accountNumber: toAccount
+    })
+
+    if (!toUserAccount) {
+        return res.status(400).json({
+            msg: "toUserAccount is invalid"
+        })
+    }
+
+    if (!fromUserAccount) {
+        return res.status(400).json({
+            msg: "System User Not Found"
+        })
+    }
+
+
+    const istransactionExsist = await transactionModel.findOne({
+        idempotecyKey: idempotecyKey
+    })
+
+    if (istransactionExsist) {
+        if (istransactionExsist.status === "Pending") {
+            return res.status(500).json({
+                msg: "Transaction is still pending. Please wait a while and then lodge a compalin"
+            })
+        }
+        if (istransactionExsist.status === "Successfull") {
+            return res.status(500).json({
+                msg: "Transaction is completed"
+            })
+        }
+        if (istransactionExsist.status === "Reversed") {
+            return res.status(500).json({
+                msg: "Transaction is reversed. Please check Your account"
+            })
+        }
+        if (istransactionExsist.status === "Failed") {
+            return res.status(500).json({
+                msg: "Transaction is failed try after a while"
+            })
+        }
+    }
+
+
+    if (toUserAccount.status === "CLOSED") {
+        return res.status(401).json({
+            msg: "toUserAccount is already closed"
+        })
+    }
+        if (toUserAccount.status === "FROZEN") {
+        return res.status(401).json({
+            msg: "toUserAccount is currently under frezed. Transaction is not possible now"
+        })
+    }
+
+
+
+
+
+    try {
+        session.startTransaction()
+
+        const [transaction] = await transactionModel.create([{
+            fromAccount: fromUserAccount._id,
+            toAccount: toUserAccount._id,
+            amount: amount,
+            idempotecyKey,
+            status: "Pending"
+        }], { session })
+
+        await ledgerModel.create([{
+            accountId: fromUserAccount._id,
+            transactionId: transaction._id,
+            type: "Debit",
+            amount: amount
+
+        }], { session })
+
+        await ledgerModel.create([{
+            accountId: toUserAccount._id,
+            transactionId: transaction._id,
+            type: "Credit",
+            amount: amount
+
+        }], { session })
+
+        transaction.status = "Successfull"
+        await transaction.save({ session })
+
+        await session.commitTransaction()
+    } catch (error) {
+        await session.abortTransaction()
+        throw error
+
+    }
+    finally {
+        session.endSession()
+    }
 
 
 }
 
+
 module.exports = {
-    transactionHandler
+    transactionHandler, authorityDepositHandler
 }
