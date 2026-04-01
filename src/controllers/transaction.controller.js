@@ -6,18 +6,16 @@ const mongoose = require("mongoose")
 
 async function transactionHandler(req, res) {
 
-    const { fromAccount, toAccount, amount, idempotecyKey } = req.body
+    const { toAccount, amount, idempotecyKey } = req.body
 
-    if (!fromAccount || !toAccount || !amount || !idempotecyKey) {
+    if (!toAccount || !amount || !idempotecyKey) {
         return res.status(402).json({
             msg: "For a transaction formAccount, toAccount, amount and idempotecyKey are required"
         })
     }
 
 
-    const fromUserAccount = await accountModel.findOne({
-        accountNumber: fromAccount
-    })
+    const fromUserAccount = await accountModel.findById(res.user._id)
 
     const toUserAccount = await accountModel.findOne({
         accountNumber: toAccount
@@ -58,24 +56,9 @@ async function transactionHandler(req, res) {
     }
 
 
-    if (fromUserAccount.status === "CLOSED") {
+    if (fromUserAccount.status === "CLOSED" || toUserAccount.status === "CLOSED" || fromUserAccount.status === "FROZEN" || toUserAccount.status === "FROZEN") {
         return res.status(401).json({
-            msg: "fromUserAccount is already closed"
-        })
-    }
-    if (toUserAccount.status === "CLOSED") {
-        return res.status(401).json({
-            msg: "toUserAccount is already closed"
-        })
-    }
-    if (fromUserAccount.status === "FROZEN") {
-        return res.status(401).json({
-            msg: "fromUserAccount is currently under frezed. Transaction is not possible now"
-        })
-    }
-    if (toUserAccount.status === "FROZEN") {
-        return res.status(401).json({
-            msg: "toUserAccount is currently under frezed. Transaction is not possible now"
+            msg: "fromUserAccount or toUserAccount may be closed or frezed. Please check it"
         })
     }
 
@@ -140,13 +123,16 @@ async function transactionHandler(req, res) {
 async function authorityDepositHandler(req, res) {
     const { toAccount, amount, idempotecyKey } = req.body
 
-    if ( !toAccount || !amount || !idempotecyKey) {
+    if (!toAccount || !amount || !idempotecyKey) {
         return res.status(402).json({
-            msg: "For a transaction formAccount, toAccount, amount and idempotecyKey are required"
+            msg: "For a transaction  toAccount, amount and idempotecyKey are required"
         })
     }
 
-    const fromUserAccount = res.user
+
+    const fromUserAccount = await accountModel.findOne({
+       user: res.user._id
+    })
 
     const toUserAccount = await accountModel.findOne({
         accountNumber: toAccount
@@ -156,9 +142,7 @@ async function authorityDepositHandler(req, res) {
         return res.status(400).json({
             msg: "toUserAccount is invalid"
         })
-    }
-
-    if (!fromUserAccount) {
+    } else if (!fromUserAccount) {
         return res.status(400).json({
             msg: "System User Not Found"
         })
@@ -174,18 +158,15 @@ async function authorityDepositHandler(req, res) {
             return res.status(500).json({
                 msg: "Transaction is still pending. Please wait a while and then lodge a compalin"
             })
-        }
-        if (istransactionExsist.status === "Successfull") {
+        } else if (istransactionExsist.status === "Successfull") {
             return res.status(500).json({
                 msg: "Transaction is completed"
             })
-        }
-        if (istransactionExsist.status === "Reversed") {
+        } else if (istransactionExsist.status === "Reversed") {
             return res.status(500).json({
                 msg: "Transaction is reversed. Please check Your account"
             })
-        }
-        if (istransactionExsist.status === "Failed") {
+        } else {
             return res.status(500).json({
                 msg: "Transaction is failed try after a while"
             })
@@ -193,20 +174,15 @@ async function authorityDepositHandler(req, res) {
     }
 
 
-    if (toUserAccount.status === "CLOSED") {
+    if (fromUserAccount.status === "CLOSED" || toUserAccount.status === "CLOSED" || fromUserAccount.status === "FROZEN" || toUserAccount.status === "FROZEN") {
         return res.status(401).json({
-            msg: "toUserAccount is already closed"
-        })
-    }
-        if (toUserAccount.status === "FROZEN") {
-        return res.status(401).json({
-            msg: "toUserAccount is currently under frezed. Transaction is not possible now"
+            msg: "fromUserAccount or toUserAccount may be closed or frezed. Please check it"
         })
     }
 
 
 
-
+    const session = await mongoose.startSession();
 
     try {
         session.startTransaction()
@@ -247,6 +223,10 @@ async function authorityDepositHandler(req, res) {
     finally {
         session.endSession()
     }
+
+    return res.status(202).json({
+        message: "Transaction Successful"
+    })
 
 
 }
