@@ -1,8 +1,10 @@
 const express= require("express")
-const checkuserLogin = require("../middlewares/auth.middleware")
+const middleware = require("../middlewares/auth.middleware")
 const accountHandler = require("../controllers/account.controller")
 const router = express.Router()
 
-router.post("/", checkuserLogin.checkUserlogin, accountHandler.createAccountHandler)
+router.post("/", middleware.checkUserlogin, accountHandler.createAccountHandler)
+
+router.post("/check/balance", middleware.checkUserlogin, accountHandler.checkBalaceHandler)
 
 module.exports = router

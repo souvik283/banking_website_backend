@@ -135,6 +135,26 @@ async function createUniqueAccNum() {
 
 }
 
+async function checkBalaceHandler(req, res) {
+    // try {
+        const account = await accountModel.findOne({
+            user: res.user._id
+        })
+
+        const balance = await account.checkBalace()
+
+        return res.status(201).json({
+            Message: `Your account balance is ${balance}`
+        })
+    // }catch(err){
+    //     return res.status(401).json({
+    //         err
+    //     })
+    // }
+
+}
+
 module.exports = {
-    createAccountHandler
+    createAccountHandler,
+    checkBalaceHandler
 }
