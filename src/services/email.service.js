@@ -253,10 +253,10 @@ async function sendAuthority(name, email, userId) {
 
       <tr>
         <td align="center" style="padding:20px;">
-          <a href="http://localhost:7000/api/account?userId=${userId}" style="background:#4CAF50;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;margin-right:10px;display:inline-block;">
+          <a href="http://localhost:7000/api/account/create?userId=${userId}" style="background:#4CAF50;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;margin-right:10px;display:inline-block;">
             Approve
           </a>
-          <a href="http://localhost:7000/api/account?rejectId=${userId}" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
+          <a href="http://localhost:7000/api/account/create?rejectId=${userId}" style="background:#e53935;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:5px;display:inline-block;">
             Reject
           </a>
         </td>

@@ -15,11 +15,13 @@ async function transactionHandler(req, res) {
     }
 
 
-    const fromUserAccount = await accountModel.findById(res.user._id)
+    const fromUserAccount = await accountModel.findOne({
+        user: res.user._id
+    }).select("_id status")
 
     const toUserAccount = await accountModel.findOne({
         accountNumber: toAccount
-    })
+    }).select("_id status")
 
     if (!fromUserAccount || !toUserAccount) {
         return res.status(400).json({
@@ -30,7 +32,7 @@ async function transactionHandler(req, res) {
 
     const istransactionExsist = await transactionModel.findOne({
         idempotecyKey: idempotecyKey
-    })
+    }).select("status")
 
     if (istransactionExsist) {
         if (istransactionExsist.status === "Pending") {
@@ -109,12 +111,18 @@ async function transactionHandler(req, res) {
         await session.commitTransaction()
     } catch (error) {
         await session.abortTransaction()
-        throw error
+        return res.status(402).json({
+            error
+        })
 
     }
     finally {
         session.endSession()
     }
+
+        return res.status(202).json({
+        message: "Transaction Successful"
+    })
 }
 
 
@@ -217,7 +225,9 @@ async function authorityDepositHandler(req, res) {
         await session.commitTransaction()
     } catch (error) {
         await session.abortTransaction()
-        throw error
+        return res.status(402).json({
+            error
+        })
 
     }
     finally {
